@@ -9,7 +9,6 @@ if ('serviceWorker' in navigator) {
 
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d', { alpha:false, desynchronized:true });
-  const hint = document.getElementById('hint');
   const buttons = [...document.querySelectorAll('button[data-mode]')];
 
   const PAPER = '#efeade';
@@ -23,7 +22,7 @@ if ('serviceWorker' in navigator) {
   const HALF_PI = Math.PI / 2;
   const STORE_KEY = 'multiscale-truchet:winged:v3';
 
-  let width = 0, height = 0, dpr = 1, mode = 'rotate', raf = 0, hintTimer = 0;
+  let width = 0, height = 0, dpr = 1, mode = 'rotate', raf = 0;
   const camera = { x:0, y:0, zoom:1 };
   const split = new Set();
   const flip = new Set();
@@ -236,7 +235,6 @@ if ('serviceWorker' in navigator) {
 
   const pointers = new Map();
   const pointer = { id:null, down:false, moved:false, startX:0, startY:0, lastX:0, lastY:0, lastNodeKey:null, pinch:false, pinchDist:1, pinchZoom:1, pinchWorld:null };
-  function showHint(text){ hint.textContent = text; hint.classList.add('visible'); clearTimeout(hintTimer); hintTimer = setTimeout(() => hint.classList.remove('visible'),2500); }
 
   function applyTool(node){
     if (mode === 'rotate') rotateNode(node);
@@ -327,7 +325,6 @@ if ('serviceWorker' in navigator) {
   buttons.forEach(button => button.addEventListener('click', () => {
     mode = button.dataset.mode;
     buttons.forEach(b => b.classList.toggle('active', b === button));
-    showHint(mode === 'rotate' ? 'tap or drag to rotate' : mode === 'fracture' ? 'tap or drag to split' : 'tap or drag to join');
   }));
 
   window.addEventListener('keydown', e => {
@@ -339,6 +336,5 @@ if ('serviceWorker' in navigator) {
   });
 
   window.addEventListener('resize', resize, { passive:true });
-  setTimeout(() => hint.classList.remove('visible'), 2600);
   resize();
 })();
