@@ -23,9 +23,8 @@ if ('serviceWorker' in navigator) {
   const HALF_PI = Math.PI / 2;
   const STORE_KEY = 'multiscale-truchet:winged:v3';
 
-  let width = 0, height = 0, dpr = 1, mode = 'rotate', raf = 0, hintTimer = 0, inertiaRaf = 0;
+  let width = 0, height = 0, dpr = 1, mode = 'rotate', raf = 0, hintTimer = 0;
   const camera = { x:0, y:0, zoom:1 };
-  const velocity = { x:0, y:0 };
   const split = new Set();
   const flip = new Set();
   const animations = new Map();
@@ -236,12 +235,38 @@ if ('serviceWorker' in navigator) {
   }
 
   const pointers = new Map();
-  const pointer = { id:null, down:false, moved:false, startX:0, startY:0, lastX:0, lastY:0, lastT:0, pinch:false, pinchDist:1, pinchZoom:1, pinchWorld:null };
+  const pointer = { id:null, down:false, moved:false, startX:0, startY:0, lastX:0, lastY:0, lastNodeKey:null, pinch:false, pinchDist:1, pinchZoom:1, pinchWorld:null };
   function showHint(text){ hint.textContent = text; hint.classList.add('visible'); clearTimeout(hintTimer); hintTimer = setTimeout(() => hint.classList.remove('visible'),2500); }
-  function stopInertia(){ if (inertiaRaf) cancelAnimationFrame(inertiaRaf); inertiaRaf=0; velocity.x=velocity.y=0; }
+
+  function applyTool(node){
+    if (mode === 'rotate') rotateNode(node);
+    else if (mode === 'fracture') fractureNode(node);
+    else joinNode(node);
+  }
+
+  function applyToolForStroke(node){
+    if (pointer.lastNodeKey === node.k) return;
+    pointer.lastNodeKey = node.k;
+    applyTool(node);
+  }
+
+  function applyToolAlongStroke(fromX, fromY, toX, toY){
+    const distance = Math.hypot(toX - fromX, toY - fromY);
+    const step = Math.max(6, MIN_SIZE_SCREEN * 0.8);
+    const count = Math.max(1, Math.ceil(distance / step));
+
+    for (let i=0; i<=count; i++) {
+      const t = i / count;
+      const w = screenToWorld(
+        fromX + (toX - fromX) * t,
+        fromY + (toY - fromY) * t
+      );
+      applyToolForStroke(findLeafAt(w.x,w.y));
+    }
+  }
 
   canvas.addEventListener('pointerdown', e => {
-    stopInertia(); pointers.set(e.pointerId, {x:e.clientX,y:e.clientY}); canvas.setPointerCapture(e.pointerId); canvas.classList.add('dragging');
+    pointers.set(e.pointerId, {x:e.clientX,y:e.clientY}); canvas.setPointerCapture(e.pointerId); canvas.classList.add('dragging');
     if (pointers.size === 2) {
       const pts = [...pointers.values()];
       pointer.pinch = true;
@@ -252,7 +277,7 @@ if ('serviceWorker' in navigator) {
     }
     if (pointers.size === 1) {
       pointer.id=e.pointerId; pointer.down=true; pointer.moved=false;
-      pointer.startX=pointer.lastX=e.clientX; pointer.startY=pointer.lastY=e.clientY; pointer.lastT=performance.now(); velocity.x=velocity.y=0;
+      pointer.startX=pointer.lastX=e.clientX; pointer.startY=pointer.lastY=e.clientY; pointer.lastNodeKey=null;
     }
   });
 
@@ -269,41 +294,26 @@ if ('serviceWorker' in navigator) {
       requestDraw(); return;
     }
     if (!pointer.down || e.pointerId !== pointer.id) return;
-    const now=performance.now(), dx=e.clientX-pointer.lastX, dy=e.clientY-pointer.lastY, dt=Math.max(1, now-pointer.lastT);
     if (Math.hypot(e.clientX-pointer.startX,e.clientY-pointer.startY) > 7) pointer.moved = true;
-    camera.x -= dx / camera.zoom; camera.y -= dy / camera.zoom;
-    velocity.x = -dx / dt / camera.zoom; velocity.y = -dy / dt / camera.zoom;
-    pointer.lastX=e.clientX; pointer.lastY=e.clientY; pointer.lastT=now;
-    requestDraw();
+    if (pointer.moved) applyToolAlongStroke(pointer.lastX,pointer.lastY,e.clientX,e.clientY);
+    pointer.lastX=e.clientX; pointer.lastY=e.clientY;
   });
 
   function endPointer(e){
     const wasPrimary = e.pointerId === pointer.id;
     pointers.delete(e.pointerId);
-    if (pointer.pinch && pointers.size < 2) { pointer.pinch=false; pointer.down=false; canvas.classList.remove('dragging'); return; }
+    if (pointers.size === 0) canvas.classList.remove('dragging');
+    if (pointer.pinch && pointers.size < 2) { pointer.pinch=false; pointer.down=false; pointer.lastNodeKey=null; return; }
     if (!wasPrimary || !pointer.down) return;
-    pointer.down=false; pointer.id=null; canvas.classList.remove('dragging');
+    if (pointer.moved) applyToolAlongStroke(pointer.lastX,pointer.lastY,e.clientX,e.clientY);
+    pointer.down=false; pointer.id=null; pointer.lastNodeKey=null; canvas.classList.remove('dragging');
     if (!pointer.moved) {
       const w=screenToWorld(e.clientX,e.clientY), node=findLeafAt(w.x,w.y);
-      if (mode === 'rotate') rotateNode(node); else if (mode === 'fracture') fractureNode(node); else joinNode(node);
-      return;
+      applyTool(node);
     }
-    if (Math.hypot(velocity.x,velocity.y) > .04) startInertia();
   }
   canvas.addEventListener('pointerup', endPointer);
   canvas.addEventListener('pointercancel', endPointer);
-
-  function startInertia(){
-    let last=performance.now();
-    const step=()=>{
-      const now=performance.now(), dt=Math.min(32, now-last); last=now;
-      camera.x += velocity.x * dt; camera.y += velocity.y * dt;
-      const decay = Math.pow(.92, dt/16.6667); velocity.x *= decay; velocity.y *= decay;
-      requestDraw();
-      if (Math.hypot(velocity.x,velocity.y) > .01) inertiaRaf = requestAnimationFrame(step); else inertiaRaf = 0;
-    };
-    inertiaRaf = requestAnimationFrame(step);
-  }
 
   canvas.addEventListener('wheel', e => {
     e.preventDefault();
@@ -317,7 +327,7 @@ if ('serviceWorker' in navigator) {
   buttons.forEach(button => button.addEventListener('click', () => {
     mode = button.dataset.mode;
     buttons.forEach(b => b.classList.toggle('active', b === button));
-    showHint(mode === 'rotate' ? 'tap a tile to rotate' : mode === 'fracture' ? 'tap a tile to split it into 4' : 'tap a child tile to join its group');
+    showHint(mode === 'rotate' ? 'tap or drag to rotate' : mode === 'fracture' ? 'tap or drag to split' : 'tap or drag to join');
   }));
 
   window.addEventListener('keydown', e => {

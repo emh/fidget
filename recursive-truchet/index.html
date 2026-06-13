@@ -16,11 +16,20 @@
 </head>
 <body>
 <canvas id="canvas" aria-label="Multi-scale Truchet canvas"></canvas>
-<div id="hint" class="hint visible">drag to pan · pinch/wheel to zoom</div>
+<div id="hint" class="hint visible">tap or drag to use tool · two-finger pan/zoom</div>
 <div class="toolbar" role="toolbar" aria-label="Tools">
-  <button data-mode="rotate" class="active">rotate</button>
-  <button data-mode="fracture">fracture</button>
-  <button data-mode="join">join</button>
+  <button data-mode="rotate" class="active" aria-label="Rotate">
+    <svg class="icon icon-rotate" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M21 3v6h-6"></path>
+      <path d="M20.5 13a8.5 8.5 0 1 1-2.5-6L21 9"></path>
+    </svg>
+  </button>
+  <button data-mode="fracture" aria-label="Fracture">
+    <span class="icon icon-fracture" aria-hidden="true"></span>
+  </button>
+  <button data-mode="join" aria-label="Join">
+    <span class="icon icon-join" aria-hidden="true"></span>
+  </button>
 </div>
 
   <script type="module" src="./src/app.js"></script>
