@@ -3,20 +3,6 @@ import { loadEdits, saveEdits } from './lib/storage.js';
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
-const safeAreaProbe = document.createElement('div');
-
-safeAreaProbe.id = 'safeAreaProbe';
-safeAreaProbe.setAttribute('aria-hidden', 'true');
-safeAreaProbe.style.cssText = [
-  'position:fixed',
-  'left:0',
-  'bottom:0',
-  'width:0',
-  'height:env(safe-area-inset-bottom, 0px)',
-  'visibility:hidden',
-  'pointer-events:none'
-].join(';');
-document.body.append(safeAreaProbe);
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -39,6 +25,7 @@ const MAX_ZOOM = 3.2;
 const SHAKE_THRESHOLD = 16;
 const SHAKE_DELTA_THRESHOLD = 18;
 const SHAKE_COOLDOWN = 1100;
+const BOTTOM_OVERSCAN = 128;
 
 const COLOR = {
   R: '#d33a2c',
@@ -102,15 +89,6 @@ const pinch = {
   anchorWorldX: 0,
   anchorWorldY: 0
 };
-
-function px(value) {
-  const n = Number.parseFloat(value);
-  return Number.isFinite(n) ? n : 0;
-}
-
-function safeBottomInset() {
-  return px(getComputedStyle(safeAreaProbe).height);
-}
 
 function keyOf(ix, iy) {
   return `${ix},${iy}`;
@@ -289,13 +267,12 @@ function drawAnimatedTile(x, y, anim, now) {
 
 function resize() {
   const rect = canvas.getBoundingClientRect();
-  const safeBottom = safeBottomInset();
   const viewportHeight = window.visualViewport?.height || window.innerHeight;
   width = rect.width || window.innerWidth;
   height = Math.max(
     rect.height || 0,
-    window.innerHeight + safeBottom,
-    viewportHeight + safeBottom
+    window.innerHeight + BOTTOM_OVERSCAN,
+    viewportHeight + BOTTOM_OVERSCAN
   );
   dpr = Math.min(window.devicePixelRatio || 1, 2.5);
 

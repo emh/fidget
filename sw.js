@@ -1,4 +1,4 @@
-const CACHE_NAME = 'truchet-fidget-v4';
+const CACHE_NAME = 'truchet-fidget-v5';
 const APP_SHELL = [
   './',
   './index.html',

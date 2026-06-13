@@ -4,7 +4,7 @@
   --glass: rgba(243, 240, 232, 0.72);
   --line: rgba(5, 5, 5, 0.14);
   --text: rgba(0, 0, 0, 0.72);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --bottom-overscan: 128px;
 }
 
 * {
@@ -39,13 +39,13 @@ canvas {
   position: fixed;
   top: 0;
   right: 0;
-  bottom: calc(-1 * env(safe-area-inset-bottom, 0px));
+  bottom: calc(-1 * var(--bottom-overscan));
   left: 0;
   width: 100vw;
   width: 100dvw;
   height: auto;
-  min-height: calc(100vh + env(safe-area-inset-bottom, 0px));
-  min-height: calc(100dvh + env(safe-area-inset-bottom, 0px));
+  min-height: calc(100vh + var(--bottom-overscan));
+  min-height: calc(100dvh + var(--bottom-overscan));
   display: block;
   background: var(--bg);
   cursor: grab;
