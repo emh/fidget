@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#efeade" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Recursive" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Multi-scale Truchet — Winged Tiles</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./assets/icon-512.png" type="image/png" />
+  <link rel="apple-touch-icon" href="./assets/icon-512.png" />
+  <link rel="stylesheet" href="./src/styles.css" />
+</head>
+<body>
+<canvas id="canvas" aria-label="Multi-scale Truchet canvas"></canvas>
+<div id="hint" class="hint visible">drag to pan · pinch/wheel to zoom</div>
+<div class="toolbar" role="toolbar" aria-label="Tools">
+  <button data-mode="rotate" class="active">rotate</button>
+  <button data-mode="fracture">fracture</button>
+  <button data-mode="join">join</button>
+</div>
+
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>

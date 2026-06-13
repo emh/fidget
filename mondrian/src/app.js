@@ -1,109 +1,9 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
-<title>Mondrian Infinite Canvas Prototype</title>
-<style>
-  :root {
-    --bg: #f4f1e8;
-    --ink: #111;
-    --paper: #fbfaf6;
-    --yellow: #f6d318;
-    --blue: #1559b7;
-    --red: #d6281f;
-    --tool: #fffef9;
-    --tool-active: #111;
-    --tool-active-text: #fffef9;
-  }
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).catch(() => {});
+  });
+}
 
-  * { box-sizing: border-box; }
-
-  html, body {
-    margin: 0;
-    height: 100%;
-    overflow: hidden;
-    background: var(--bg);
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    touch-action: none;
-    user-select: none;
-    -webkit-user-select: none;
-  }
-
-  #app {
-    height: 100dvh;
-    display: grid;
-    grid-template-rows: 1fr auto;
-  }
-
-  #stage {
-    width: 100%;
-    height: 100%;
-    display: block;
-    background: var(--paper);
-    cursor: grab;
-  }
-
-  #stage:active { cursor: grabbing; }
-
-  #toolbar {
-    padding: 10px max(10px, env(safe-area-inset-left)) calc(10px + env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-right));
-    background: var(--bg);
-    border-top: 5px solid var(--ink);
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 8px;
-  }
-
-  button {
-    height: 52px;
-    border: 3px solid var(--ink);
-    background: var(--tool);
-    color: var(--ink);
-    border-radius: 0;
-    font: 800 12px/1 system-ui, sans-serif;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    touch-action: manipulation;
-  }
-
-  button.active {
-    background: var(--tool-active);
-    color: var(--tool-active-text);
-  }
-
-  button[data-tool="paint-yellow"] { box-shadow: inset 0 -10px 0 var(--yellow); }
-  button[data-tool="paint-blue"]   { box-shadow: inset 0 -10px 0 var(--blue); }
-  button[data-tool="paint-red"]    { box-shadow: inset 0 -10px 0 var(--red); }
-
-  button[data-tool="paint-yellow"].active,
-  button[data-tool="paint-blue"].active,
-  button[data-tool="paint-red"].active {
-    box-shadow: none;
-  }
-
-  @media (max-width: 420px) {
-    button {
-      height: 50px;
-      font-size: 10px;
-      padding: 0 4px;
-    }
-  }
-</style>
-</head>
-<body>
-<div id="app">
-  <canvas id="stage"></canvas>
-  <nav id="toolbar" aria-label="Tools">
-    <button type="button" data-tool="split-v" class="active">Split V</button>
-    <button type="button" data-tool="split-h">Split H</button>
-    <button type="button" data-tool="paint-yellow">Yellow</button>
-    <button type="button" data-tool="paint-blue">Blue</button>
-    <button type="button" data-tool="paint-red">Red</button>
-  </nav>
-</div>
-
-<script>
 (() => {
   "use strict";
 
@@ -535,6 +435,3 @@
   load();
   resize();
 })();
-</script>
-</body>
-</html>

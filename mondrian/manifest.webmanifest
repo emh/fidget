@@ -1,12 +1,12 @@
 {
-  "name": "Truchet Fidget",
-  "short_name": "Truchet",
-  "description": "An infinite Truchet tile fidget canvas.",
+  "name": "Mondrian Infinite Canvas",
+  "short_name": "Mondrian",
+  "description": "A Mondrian-style recursive subdivision canvas.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f3f0e8",
-  "theme_color": "#f3f0e8",
+  "background_color": "#f4f1e8",
+  "theme_color": "#f4f1e8",
   "orientation": "any",
   "icons": [
     {
@@ -19,12 +19,6 @@
       "src": "./assets/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./assets/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ]

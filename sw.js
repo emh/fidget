@@ -1,48 +1,17 @@
-const CACHE_NAME = 'truchet-fidget-v6';
-const APP_SHELL = [
-  './',
-  './index.html',
-  './manifest.webmanifest',
-  './assets/icon.svg',
-  './assets/icon-192.png',
-  './assets/icon-512.png',
-  './src/app.js',
-  './src/styles.css',
-  './src/lib/color.js',
-  './src/lib/storage.js'
-];
-
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting())
-  );
+self.addEventListener("install", (event) => {
+  event.waitUntil(self.skipWaiting());
 });
 
-self.addEventListener('activate', (event) => {
+self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys()
       .then((keys) => Promise.all(
         keys
-          .filter((key) => key !== CACHE_NAME)
+          .filter((key) => key.startsWith("truchet-fidget-"))
           .map((key) => caches.delete(key))
       ))
-      .then(() => self.clients.claim())
-  );
-});
-
-self.addEventListener('message', (event) => {
-  if (event.data?.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
-});
-
-self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
-
-  event.respondWith(
-    caches.match(event.request)
-      .then((cached) => cached || fetch(event.request))
+      .then(() => self.registration.unregister())
+      .then(() => self.clients.matchAll({ type: "window" }))
+      .then((clients) => Promise.all(clients.map((client) => client.navigate(client.url))))
   );
 });

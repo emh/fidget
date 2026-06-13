@@ -1,32 +1,9 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-  <meta name="theme-color" content="#efeade" />
-  <title>Multi-scale Truchet — Winged Tiles</title>
-  <style>
-    :root { --paper:#efeade; --ink:#0b0b09; --line:rgba(11,11,9,.16); --glass:rgba(239,234,222,.78); }
-    * { box-sizing:border-box; }
-    html,body { width:100%; height:100%; margin:0; overflow:hidden; background:var(--paper); touch-action:none; user-select:none; -webkit-user-select:none; overscroll-behavior:none; font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
-    canvas { position:fixed; inset:0; width:100vw; height:100vh; display:block; background:var(--paper); touch-action:none; cursor:grab; }
-    canvas.dragging { cursor:grabbing; }
-    .toolbar { position:fixed; left:50%; bottom:max(14px,env(safe-area-inset-bottom)); transform:translateX(-50%); display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:6px; border:1px solid var(--line); border-radius:999px; background:var(--glass); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); box-shadow:0 12px 38px rgba(0,0,0,.12); z-index:2; }
-    button { appearance:none; border:0; border-radius:999px; padding:10px 14px; min-width:82px; background:transparent; color:rgba(11,11,9,.68); font:600 12px/1 ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; letter-spacing:.02em; }
-    button.active { background:var(--ink); color:var(--paper); }
-    .hint { position:fixed; left:max(12px,env(safe-area-inset-left)); top:max(12px,env(safe-area-inset-top)); padding:8px 10px; border:1px solid var(--line); border-radius:999px; background:var(--glass); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); color:rgba(11,11,9,.62); font-size:12px; opacity:0; transform:translateY(-4px); transition:opacity 220ms ease,transform 220ms ease; pointer-events:none; z-index:2; }
-    .hint.visible { opacity:1; transform:translateY(0); }
-  </style>
-</head>
-<body>
-<canvas id="canvas" aria-label="Multi-scale Truchet canvas"></canvas>
-<div id="hint" class="hint visible">drag to pan · pinch/wheel to zoom</div>
-<div class="toolbar" role="toolbar" aria-label="Tools">
-  <button data-mode="rotate" class="active">rotate</button>
-  <button data-mode="fracture">fracture</button>
-  <button data-mode="join">join</button>
-</div>
-<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).catch(() => {});
+  });
+}
+
 (() => {
   'use strict';
 
@@ -355,6 +332,3 @@
   setTimeout(() => hint.classList.remove('visible'), 2600);
   resize();
 })();
-</script>
-</body>
-</html>

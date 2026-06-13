@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#f4f1e8" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Mondrian" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Mondrian Infinite Canvas Prototype</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./assets/icon-512.png" type="image/png" />
+  <link rel="apple-touch-icon" href="./assets/icon-512.png" />
+  <link rel="stylesheet" href="./src/styles.css" />
+</head>
+<body>
+<div id="app">
+  <canvas id="stage"></canvas>
+  <nav id="toolbar" aria-label="Tools">
+    <button type="button" data-tool="split-v" class="active">Split V</button>
+    <button type="button" data-tool="split-h">Split H</button>
+    <button type="button" data-tool="paint-yellow">Yellow</button>
+    <button type="button" data-tool="paint-blue">Blue</button>
+    <button type="button" data-tool="paint-red">Red</button>
+  </nav>
+</div>
+
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>
