@@ -4,6 +4,14 @@ import { loadEdits, saveEdits } from './lib/storage.js';
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
 
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {
+      // The app remains playable if service worker registration is unavailable.
+    });
+  });
+}
+
 const TILE_SIZE = 92;
 const STROKE = TILE_SIZE * 0.125;
 const RADIUS = TILE_SIZE / 2;
