@@ -1,4 +1,4 @@
-const CACHE_NAME = 'recursive-truchet-game-v9';
+const CACHE_NAME = 'recursive-truchet-game-v10';
 const APP_SHELL = [
   './',
   './index.html',

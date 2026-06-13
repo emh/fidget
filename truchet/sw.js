@@ -1,4 +1,4 @@
-const CACHE_NAME = 'truchet-game-v6';
+const CACHE_NAME = 'truchet-game-v7';
 const APP_SHELL = [
   './',
   './index.html',
