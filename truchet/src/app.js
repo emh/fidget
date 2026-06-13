@@ -65,11 +65,13 @@ const activePointers = new Map();
 
 let activeTapKey = null;
 let activeTapDirection = 1;
+let isSpaceDown = false;
 
 const pointer = {
   id: null,
   down: false,
   moved: false,
+  mode: 'edit',
   startX: 0,
   startY: 0,
   lastX: 0,
@@ -407,7 +409,12 @@ function rotateTilesAlongStroke(fromX, fromY, toX, toY) {
   }
 }
 
+function shouldPanWithPointer(event) {
+  return event.pointerType === 'mouse' && (event.button === 1 || isSpaceDown);
+}
+
 canvas.addEventListener('pointerdown', (event) => {
+  if (event.button === 1) event.preventDefault();
   requestMotionPermission();
   activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
   canvas.setPointerCapture(event.pointerId);
@@ -425,6 +432,7 @@ canvas.addEventListener('pointerdown', (event) => {
   pointer.id = event.pointerId;
   pointer.down = true;
   pointer.moved = false;
+  pointer.mode = shouldPanWithPointer(event) ? 'pan' : 'edit';
   pointer.startX = pointer.lastX = event.clientX;
   pointer.startY = pointer.lastY = event.clientY;
   pointer.lastTileKey = null;
@@ -445,7 +453,11 @@ canvas.addEventListener('pointermove', (event) => {
     pointer.moved = true;
   }
 
-  if (pointer.moved) {
+  if (pointer.mode === 'pan') {
+    camera.x -= (event.clientX - pointer.lastX) / zoom;
+    camera.y -= (event.clientY - pointer.lastY) / zoom;
+    requestDraw();
+  } else if (pointer.moved) {
     rotateTilesAlongStroke(pointer.lastX, pointer.lastY, event.clientX, event.clientY);
   }
 
@@ -463,16 +475,18 @@ function endPointer(event) {
   }
 
   if (!pointer.down || event.pointerId !== pointer.id) return;
-  if (pointer.moved) {
+  const wasPanning = pointer.mode === 'pan';
+  if (pointer.mode === 'edit' && pointer.moved) {
     rotateTilesAlongStroke(pointer.lastX, pointer.lastY, event.clientX, event.clientY);
   }
 
   pointer.down = false;
   pointer.id = null;
+  pointer.mode = 'edit';
   pointer.lastTileKey = null;
   canvas.classList.remove('dragging');
 
-  if (!pointer.moved) {
+  if (!wasPanning && !pointer.moved) {
     const tile = tileFromScreen(event.clientX, event.clientY);
     advanceTile(tile.ix, tile.iy);
   }
@@ -524,6 +538,7 @@ function endPinch() {
   pinch.active = false;
   pointer.down = false;
   pointer.id = null;
+  pointer.mode = 'edit';
   canvas.classList.toggle('dragging', activePointers.size > 0);
 }
 
@@ -583,14 +598,33 @@ function handleDeviceMotion(event) {
 
 canvas.addEventListener('pointerup', endPointer);
 canvas.addEventListener('pointercancel', endPointer);
+canvas.addEventListener('auxclick', (event) => {
+  if (event.button === 1) event.preventDefault();
+});
 
 window.addEventListener('resize', resize, { passive: true });
 window.addEventListener('orientationchange', resize, { passive: true });
 
 window.addEventListener('keydown', (event) => {
+  if (event.code === 'Space') {
+    isSpaceDown = true;
+    event.preventDefault();
+  }
+
   if (event.key === '0') {
     resetFidget();
   }
+});
+
+window.addEventListener('keyup', (event) => {
+  if (event.code === 'Space') {
+    isSpaceDown = false;
+    event.preventDefault();
+  }
+});
+
+window.addEventListener('blur', () => {
+  isSpaceDown = false;
 });
 
 window.addEventListener('devicemotion', handleDeviceMotion, { passive: true });

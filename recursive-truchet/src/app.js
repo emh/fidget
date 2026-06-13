@@ -27,6 +27,7 @@ if ('serviceWorker' in navigator) {
   const split = new Set();
   const flip = new Set();
   const animations = new Map();
+  let isSpaceDown = false;
   loadState();
 
   function key(level,x,y){ return `${level}:${x}:${y}`; }
@@ -234,7 +235,7 @@ if ('serviceWorker' in navigator) {
   }
 
   const pointers = new Map();
-  const pointer = { id:null, down:false, moved:false, startX:0, startY:0, lastX:0, lastY:0, lastNodeKey:null, pinch:false, pinchDist:1, pinchZoom:1, pinchWorld:null };
+  const pointer = { id:null, down:false, moved:false, mode:'edit', startX:0, startY:0, lastX:0, lastY:0, lastNodeKey:null, pinch:false, pinchDist:1, pinchZoom:1, pinchWorld:null };
 
   function applyTool(node){
     if (mode === 'rotate') rotateNode(node);
@@ -263,7 +264,12 @@ if ('serviceWorker' in navigator) {
     }
   }
 
+  function shouldPanWithPointer(e){
+    return e.pointerType === 'mouse' && (e.button === 1 || isSpaceDown);
+  }
+
   canvas.addEventListener('pointerdown', e => {
+    if (e.button === 1) e.preventDefault();
     pointers.set(e.pointerId, {x:e.clientX,y:e.clientY}); canvas.setPointerCapture(e.pointerId); canvas.classList.add('dragging');
     if (pointers.size === 2) {
       const pts = [...pointers.values()];
@@ -275,6 +281,7 @@ if ('serviceWorker' in navigator) {
     }
     if (pointers.size === 1) {
       pointer.id=e.pointerId; pointer.down=true; pointer.moved=false;
+      pointer.mode=shouldPanWithPointer(e) ? 'pan' : 'edit';
       pointer.startX=pointer.lastX=e.clientX; pointer.startY=pointer.lastY=e.clientY; pointer.lastNodeKey=null;
     }
   });
@@ -293,7 +300,13 @@ if ('serviceWorker' in navigator) {
     }
     if (!pointer.down || e.pointerId !== pointer.id) return;
     if (Math.hypot(e.clientX-pointer.startX,e.clientY-pointer.startY) > 7) pointer.moved = true;
-    if (pointer.moved) applyToolAlongStroke(pointer.lastX,pointer.lastY,e.clientX,e.clientY);
+    if (pointer.mode === 'pan') {
+      camera.x -= (e.clientX - pointer.lastX) / camera.zoom;
+      camera.y -= (e.clientY - pointer.lastY) / camera.zoom;
+      requestDraw();
+    } else if (pointer.moved) {
+      applyToolAlongStroke(pointer.lastX,pointer.lastY,e.clientX,e.clientY);
+    }
     pointer.lastX=e.clientX; pointer.lastY=e.clientY;
   });
 
@@ -301,17 +314,21 @@ if ('serviceWorker' in navigator) {
     const wasPrimary = e.pointerId === pointer.id;
     pointers.delete(e.pointerId);
     if (pointers.size === 0) canvas.classList.remove('dragging');
-    if (pointer.pinch && pointers.size < 2) { pointer.pinch=false; pointer.down=false; pointer.lastNodeKey=null; return; }
+    if (pointer.pinch && pointers.size < 2) { pointer.pinch=false; pointer.down=false; pointer.mode='edit'; pointer.lastNodeKey=null; return; }
     if (!wasPrimary || !pointer.down) return;
-    if (pointer.moved) applyToolAlongStroke(pointer.lastX,pointer.lastY,e.clientX,e.clientY);
-    pointer.down=false; pointer.id=null; pointer.lastNodeKey=null; canvas.classList.remove('dragging');
-    if (!pointer.moved) {
+    const wasPanning = pointer.mode === 'pan';
+    if (pointer.mode === 'edit' && pointer.moved) applyToolAlongStroke(pointer.lastX,pointer.lastY,e.clientX,e.clientY);
+    pointer.down=false; pointer.id=null; pointer.mode='edit'; pointer.lastNodeKey=null; canvas.classList.remove('dragging');
+    if (!wasPanning && !pointer.moved) {
       const w=screenToWorld(e.clientX,e.clientY), node=findLeafAt(w.x,w.y);
       applyTool(node);
     }
   }
   canvas.addEventListener('pointerup', endPointer);
   canvas.addEventListener('pointercancel', endPointer);
+  canvas.addEventListener('auxclick', e => {
+    if (e.button === 1) e.preventDefault();
+  });
 
   canvas.addEventListener('wheel', e => {
     e.preventDefault();
@@ -328,11 +345,27 @@ if ('serviceWorker' in navigator) {
   }));
 
   window.addEventListener('keydown', e => {
+    if (e.code === 'Space') {
+      isSpaceDown = true;
+      e.preventDefault();
+    }
+
     if (e.key === '1') buttons[0].click();
     if (e.key === '2') buttons[1].click();
     if (e.key === '3') buttons[2].click();
     if (e.key === '0') { camera.x = camera.y = 0; camera.zoom = 1; requestDraw(); }
     if (e.key.toLowerCase() === 'c') { split.clear(); flip.clear(); animations.clear(); saveState(); requestDraw(); }
+  });
+
+  window.addEventListener('keyup', e => {
+    if (e.code === 'Space') {
+      isSpaceDown = false;
+      e.preventDefault();
+    }
+  });
+
+  window.addEventListener('blur', () => {
+    isSpaceDown = false;
   });
 
   window.addEventListener('resize', resize, { passive:true });
