@@ -4,7 +4,6 @@
   --glass: rgba(243, 240, 232, 0.72);
   --line: rgba(5, 5, 5, 0.14);
   --text: rgba(0, 0, 0, 0.72);
-  --bottom-overscan: 128px;
 }
 
 * {
@@ -13,13 +12,8 @@
 
 html,
 body {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  width: 100dvw;
-  height: 100vh;
-  height: 100dvh;
   margin: 0;
+  min-height: 100%;
   overflow: hidden;
   background: var(--bg);
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -29,23 +23,31 @@ body {
   touch-action: none;
 }
 
+body {
+  min-height: 100dvh;
+}
+
 button {
   appearance: none;
   font: inherit;
   cursor: pointer;
 }
 
-canvas {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: calc(-1 * var(--bottom-overscan));
-  left: 0;
+.app-shell {
+  position: relative;
   width: 100vw;
   width: 100dvw;
-  height: auto;
-  min-height: calc(100vh + var(--bottom-overscan));
-  min-height: calc(100dvh + var(--bottom-overscan));
+  height: calc(100dvh + env(safe-area-inset-bottom, 0px));
+  min-height: calc(100dvh + env(safe-area-inset-bottom, 0px));
+  overflow: hidden;
+  background: var(--bg);
+}
+
+canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   display: block;
   background: var(--bg);
   cursor: grab;

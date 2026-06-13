@@ -6,7 +6,7 @@ const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {
+    navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).catch(() => {
       // The app remains playable if service worker registration is unavailable.
     });
   });
@@ -25,7 +25,6 @@ const MAX_ZOOM = 3.2;
 const SHAKE_THRESHOLD = 16;
 const SHAKE_DELTA_THRESHOLD = 18;
 const SHAKE_COOLDOWN = 1100;
-const BOTTOM_OVERSCAN = 128;
 
 const COLOR = {
   R: '#d33a2c',
@@ -267,19 +266,12 @@ function drawAnimatedTile(x, y, anim, now) {
 
 function resize() {
   const rect = canvas.getBoundingClientRect();
-  const viewportHeight = window.visualViewport?.height || window.innerHeight;
   width = rect.width || window.innerWidth;
-  height = Math.max(
-    rect.height || 0,
-    window.innerHeight + BOTTOM_OVERSCAN,
-    viewportHeight + BOTTOM_OVERSCAN
-  );
+  height = rect.height || window.innerHeight;
   dpr = Math.min(window.devicePixelRatio || 1, 2.5);
 
   canvas.width = Math.ceil(width * dpr);
   canvas.height = Math.ceil(height * dpr);
-  canvas.style.width = `${width}px`;
-  canvas.style.height = `${height}px`;
 
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
