@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mondrian-game-v5';
+const CACHE_NAME = 'mondrian-game-v6';
 const APP_SHELL = [
   './',
   './index.html',
