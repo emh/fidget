@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#f3ece0" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Zentangle" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>zentangle</title>
+  <link rel="stylesheet" href="./src/styles.css" />
+</head>
+<body>
+  <main id="app" aria-label="Zentangle circle canvas">
+    <canvas id="stage"></canvas>
+    <nav id="toolbar" class="toolbar" aria-label="Curve settings" hidden>
+      <div class="tool">
+        <div class="flyout" data-flyout="thickness" hidden></div>
+        <button class="tool-btn" type="button" data-toolbtn="thickness" aria-label="Thickness">
+          <svg viewBox="0 0 36 36" width="30" height="30" aria-hidden="true">
+            <line x1="7" y1="18" x2="29" y2="18" stroke="currentColor" stroke-width="6" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
+      <div class="tool">
+        <div class="flyout" data-flyout="waviness" hidden></div>
+        <button class="tool-btn" type="button" data-toolbtn="waviness" aria-label="Waviness">
+          <svg viewBox="0 0 36 36" width="30" height="30" aria-hidden="true">
+            <path d="M6 22 Q 12 10 18 18 T 30 14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+      </div>
+      <div class="tool">
+        <div class="flyout" data-flyout="density" hidden></div>
+        <button class="tool-btn" type="button" data-toolbtn="density" aria-label="Density">
+          <svg viewBox="0 0 36 36" width="30" height="30" aria-hidden="true">
+            <g stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+              <line x1="11" y1="9" x2="11" y2="27" />
+              <line x1="18" y1="9" x2="18" y2="27" />
+              <line x1="25" y1="9" x2="25" y2="27" />
+            </g>
+          </svg>
+        </button>
+      </div>
+      <button class="tool-btn danger" type="button" id="deleteBtn" aria-label="Delete curve">
+        <svg viewBox="0 0 36 36" width="26" height="26" aria-hidden="true">
+          <path d="M10 13 h16 M15 13 v-2 a2 2 0 0 1 2-2 h2 a2 2 0 0 1 2 2 v2 M12.5 13 l1.3 13.5 a2.2 2.2 0 0 0 2.2 2 h4 a2.2 2.2 0 0 0 2.2-2 L24.5 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </nav>
+  </main>
+
+  <script type="module" src="./src/app.js"></script>
+  <script async data-id="101507205" src="//static.getclicky.com/js"></script>
+</body>
+</html>
