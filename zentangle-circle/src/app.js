@@ -1,3 +1,9 @@
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).catch(() => {});
+  });
+}
+
 (() => {
   "use strict";
 
@@ -12,6 +18,7 @@
   const AMP_MAX_FRAC = 0.22;
   const MAX_BENDS = 5;
   const MAX_FAN = 40;                // cap on strands in a fan
+  const DEFAULT_FAN_STRANDS = 3;     // a freshly drawn curve blooms into ~this many
 
   const config = {
     margin: 22,
@@ -46,7 +53,7 @@
   };
 
   // Settings a new fan inherits — tracks the most recently selected/edited fan.
-  const lastSettings = { thickness: DEFAULT_THICKNESS, waviness: DEFAULT_WAVINESS, density: DEFAULT_DENSITY };
+  const lastSettings = { thickness: DEFAULT_THICKNESS, waviness: DEFAULT_WAVINESS, density: DEFAULT_DENSITY, fanStrands: DEFAULT_FAN_STRANDS };
 
   const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -73,6 +80,7 @@
     lastSettings.thickness = fan.thickness;
     lastSettings.waviness = fan.waviness;
     lastSettings.density = fan.density;
+    lastSettings.fanStrands = fanCount(fan);
   }
 
   function setSelected(id) {
@@ -442,6 +450,17 @@
       inner: { controls: cloneControls(ghost.controls) },
       outer: { controls: cloneControls(ghost.controls) }
     };
+    // Bloom into a default fan: offset the outer boundary perpendicular so the
+    // fan shows ~DEFAULT_FAN_STRANDS strands (count = sep/density + 1).
+    const basis = chordBasis(fan);
+    const sepPx = (lastSettings.fanStrands - 1) * (fan.density || DEFAULT_DENSITY);
+    const offFrac = basis.len > 1 ? sepPx / basis.len : 0;
+    const proc = controlsFor(fan.waviness, fan.seed);
+    fan.outer.controls = fan.inner.controls.map((k, i) => {
+      const off = k.off + offFrac;
+      const P = proc[i];
+      return { t: k.t, off, tweaked: true, dt: P ? k.t - P.t : 0, doff: P ? off - P.off : 0 };
+    });
     state.fans.push(fan);
     return fan;
   }
@@ -697,7 +716,9 @@
     try { canvas.releasePointerCapture(e.pointerId); } catch (_) {}
 
     if (g.kind === "move-node" || g.kind === "move-control" || g.kind === "spread") {
-      // selection unchanged
+      // selection unchanged; capture any fanout change so new curves match it
+      const sf = selectedFan();
+      if (sf) rememberSettings(sf);
     } else if (g.kind === "new-or-select") {
       if (g.preview && dist(g.preview.start, g.preview.end) >= config.minCurve) {
         setSelected(commitNewFan(g.preview, g.startAnchor, g.endAnchor).id);
